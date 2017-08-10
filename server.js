@@ -17,16 +17,18 @@ mongoose.connect(config.uri, (err) => {
 	}
 }); 
 
-app.use(cors({ origin: 'http://localhost:4200' }));
+app.use(cors(/*{ origin: 'http://localhost:4200' }*/));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 
 var userroutes = require('./api/routes/UserRoutes');
+var inviteroutes = require('./api/routes/invitationRoutes');
 var authentificationroutes = require('./api/routes/authentification');
 var seanceroutes = require('./api/routes/seanceRoutes');
 
 authentificationroutes(app);
+inviteroutes(app);
 userroutes(app);
 seanceroutes(app);
 

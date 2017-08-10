@@ -308,7 +308,7 @@ module.exports = (router) => {
       });
     }
   });
-  
+ 
  
   /* ===============================================================
      Route to get user's profile data
@@ -375,13 +375,13 @@ module.exports = (router) => {
                 if (!user2) {
                    res.json({ success: false, message: 'Utilisateur introuvable.' }); // Return error message
                    } else {
-                    res.json({ success: true, user: user2 }); // Return the public user's profile data
+                    res.json({ success: true, user: user2 , profiletype : "babysitter" }); // Return the public user's profile data
                     }
                    }
                   });
             
           } else {
-            res.json({ success: true, user: user }); // Return the public user's profile data
+            res.json({ success: true, user: user , profiletype : "babysitter" }); // Return the public user's profile data
           }
         }
       });

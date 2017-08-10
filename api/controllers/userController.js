@@ -5,17 +5,6 @@ var mongoose = require('mongoose'),
   Parents = mongoose.model('Parents'),
   Babysitters = mongoose.model('Babysitters');
 
-exports.list_all_parents = function(req, res) {
-  Parents.find({}, function(err, parent) {
-    if (err)
-      res.send(err);
-    res.json(parent);
-  });
-};
-
-
-
-
 exports.create_a_parent = function(req, res) {
   var new_parent = new Parents(req.body);
   new_parent.save(function(err, parent) {

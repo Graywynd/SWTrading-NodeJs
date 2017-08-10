@@ -68,45 +68,17 @@ const bodyValidators = [
   }
 ];
 
-// Validate Function to check comment length
-let commentLengthChecker = (comment) => {
-  // Check if comment exists
-  if (!comment[0]) {
-    return false; // Return error
-  } else {
-    // Check comment length
-    if (comment[0].length < 1 || comment[0].length > 200) {
-      return false; // Return error if comment length requirement is not met
-    } else {
-      return true; // Return comment as valid
-    }
-  }
-};
-
-// Array of Comment validators
-const commentValidators = [
-  // First comment validator
-  {
-    validator: commentLengthChecker,
-    message: 'Les commentaires ne doivent pas dépasser 200 caractères.'
-  }
-];
-
 // Blog Model Definition
-const seanceSchema = new Schema({
+const invitationSchema = new Schema({
   title: { type: String, required: true, validate: titleValidators },
   body: { type: String, required: true, validate: bodyValidators },
   createdBy: { type: String },
+  duration: { type: Number, default: 1 },
+  Invited: { type: String },
   createdAt: { type: Date, default: Date.now() },
   StartAt: { type: Date, default: Date.now()+1 },
-  duration: { type: Number, default: 1 },
-  interested: { type: Number, default: 0 },
-  InterestedBy: { type: Array },
-  comments: [{
-    comment: { type: String, validate: commentValidators },
-    commentator: { type: String }
-  }]
+  confirmed: { type: Boolean, default: false }
 });
 
 // Export Module/Schema
-module.exports = mongoose.model('Seance', seanceSchema);
+module.exports = mongoose.model('Invitation', invitationSchema);

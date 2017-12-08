@@ -24,7 +24,12 @@ var HistorySchema = new Schema({
     },
     status: {
       type: String,
+      default : "En cours"
     },
+    timestamp: {
+      type: Date,
+      default : Date.now()
+    },  
     user: {
       type: Schema.Types.ObjectId,
       ref: 'Users'

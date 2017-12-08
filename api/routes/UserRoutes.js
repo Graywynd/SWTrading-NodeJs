@@ -1,6 +1,9 @@
 'use strict';
 
-const User = require('../models/UserModel'); // Import Blog Model Schema
+const User = require('../models/UserModel');
+const Historique = require('../models/HistoriqueModel');
+const Valeur = require('../models/ValeurModel'); 
+const Order = require('../models/OrderModel');   
 const jwt = require('jsonwebtoken'); // Compact, URL-safe means of representing claims to be transferred between two parties.
 const config = require('../../config/database'); // Import database configuration
 
@@ -48,7 +51,7 @@ router.get('/allUsers', (req, res) => {
     }
   });
 
-  router.get('/addToUserBalance/:username/:balance', (req, res) => {
+  router.get('/getUserHistory/:username', (req, res) => {
     // Check if id is present in parameters
     if (!req.params.username) {
       res.json({ success: false, message: 'nom utilisateur non fourni.' }); // Return error message
@@ -63,34 +66,140 @@ router.get('/allUsers', (req, res) => {
             res.json({ success: false, message: 'Utilisateur introuvable.' }); // Return error message
           } else {
 
-            
-
-            if(isNaN(req.params.balance)){
-              res.json({ success: false, message: 'balance non numérique' }); 
-            }else{
-              console.log(req.params.username + req.params.balance);
-                var sum = (+user.portfoliobalance) + (+req.params.balance);
-                console.log(sum);
-                user.portfoliobalance = sum;
-              //res.json({ success: true, user: user });
-
-                user.save((err) => {
-                 if (err) {
-                  if (err.errors) {
-                    res.json({ success: false, message: err.errors });
-                   } else {
-                    res.json({ success: false, message: err }); // Return error message
-                    }
-                  } else {
-                  res.json({ success: true, user: user , message: 'Utilisateur modifié !' }); // Return success message
+            Historique.find({ user : user._id }, (err, historiques) => {
+              // Check if error was found or not
+              if (err) {
+                res.json({ success: false, message: err }); // Return error message
+              } else {
+                // Check if blogs were found in database
+                if (!historiques) {
+                  res.json({ success: false, message: 'pas d\'historiques trouvés.' }); // Return error of no blogs found
+                } else {
+                  res.json({ success: true, historiques: historiques }); // Return success and blogs array
                 }
-              });
-            }
-             
+              }
+            }).sort({ '_id': -1 }); // Sort blogs from newest to oldest
+           
            
           }
         }
         
+      });
+    }
+  });
+
+  router.get('/getUserValeurs/:username', (req, res) => {
+    // Check if id is present in parameters
+    if (!req.params.username) {
+      res.json({ success: false, message: 'nom utilisateur non fourni.' }); // Return error message
+    } else {
+       User.findOne({ username : req.params.username.toLowerCase() }, (err, user) => {
+          // Check if the id is a valid ID
+        if (err) {
+          res.json({ success: false, message: 'Id utilisateur invalid' }); // Return error message
+        } else {
+          // Check if blog was found by id
+          if (!user) {
+            res.json({ success: false, message: 'Utilisateur introuvable.' }); // Return error message
+          } else {
+
+            Valeur.find({ user : user._id }, (err, valeurs) => {
+              // Check if error was found or not
+              if (err) {
+                res.json({ success: false, message: err }); // Return error message
+              } else {
+                // Check if blogs were found in database
+                if (!valeurs) {
+                  res.json({ success: false, message: 'pas de valeurs trouvés.' }); // Return error of no blogs found
+                } else {
+                  res.json({ success: true, valeurs: valeurs }); // Return success and blogs array
+                }
+              }
+            }).sort({ '_id': -1 }); // Sort blogs from newest to oldest
+           
+           
+          }
+        }
+        
+      });
+    }
+  });
+
+  router.get('/getUserOrders/:username', (req, res) => {
+    // Check if id is present in parameters
+    if (!req.params.username) {
+      res.json({ success: false, message: 'nom utilisateur non fourni.' }); // Return error message
+    } else {
+       User.findOne({ username : req.params.username.toLowerCase() }, (err, user) => {
+          // Check if the id is a valid ID
+        if (err) {
+          res.json({ success: false, message: 'Id utilisateur invalid' }); // Return error message
+        } else {
+          // Check if blog was found by id
+          if (!user) {
+            res.json({ success: false, message: 'Utilisateur introuvable.' }); // Return error message
+          } else {
+
+            Order.find({ user : user._id }, (err, orders) => {
+              // Check if error was found or not
+              if (err) {
+                res.json({ success: false, message: err }); // Return error message
+              } else {
+                // Check if blogs were found in database
+                if (!orders) {
+                  res.json({ success: false, message: 'pas d\'ordres trouvés.' }); // Return error of no blogs found
+                } else {
+                  res.json({ success: true, orders: orders }); // Return success and blogs array
+                }
+              }
+            }).sort({ '_id': -1 }); // Sort blogs from newest to oldest
+           
+           
+          }
+        }
+        
+      });
+    }
+  });
+
+  router.get('/addToUserBalance/:username/:balance', (req, res) => {
+    // Check if id is present in parameters
+    if (!req.params.username) {
+      res.json({ success: false, message: 'nom utilisateur non fourni.' }); // Return error message
+    } else {
+        User.findOne({ _username: req.body.username }).select("-password").exec((err, user) => {
+        // Check if id is a valid ID
+        if (err) {
+          res.json({ success: false, message: 'Id utilisateur invalid' }); // Return error message
+        } else {
+          // Check if id was found in the database
+          if (!user) {
+            res.json({ success: false, message: 'Utilisateur introuvable.' }); // Return error message
+          } else {
+                  
+                if(isNaN(req.params.balance)){
+                    res.json({ success: false, message: 'balance non numérique' }); 
+                  }else{
+                    
+                      var sum = (+user.portfoliobalance) + (+req.params.balance);
+                      
+                      user.portfoliobalance = sum;
+                    
+                      user.save((err) => {
+                      if (err) {
+                        if (err.errors) {
+                          res.json({ success: false, message: err.errors });
+                        } else {
+                          res.json({ success: false, message: err }); // Return error message
+                          }
+                        } else {
+                        res.json({ success: true, user: user , message: 'Utilisateur modifié !' }); // Return success message
+                      }
+                    });
+                  }
+                    
+          }
+        }
       });
     }
   });
@@ -170,3 +279,7 @@ router.get('/allUsers', (req, res) => {
 
     */
 };
+
+
+
+ 

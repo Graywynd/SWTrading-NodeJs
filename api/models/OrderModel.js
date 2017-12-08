@@ -26,6 +26,7 @@ var OrderSchema = new Schema({
   },
   status: {
     type: String,
+    default : "En cours"
   },
   user: {
     type: Schema.Types.ObjectId,

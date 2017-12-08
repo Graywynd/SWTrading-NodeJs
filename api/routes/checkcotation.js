@@ -39,6 +39,8 @@ exports.check = function(){
          
         
             }
+
+            console.log("mise a jour des cours ...")
         
         });
        // console.log(JSON.stringify(data, null, 2));

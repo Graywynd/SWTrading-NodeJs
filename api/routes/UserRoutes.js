@@ -1,55 +1,37 @@
 'use strict';
-const Babysitter = require('../models/BabysitterModel'); // Import User Model Schema
-const Parent = require('../models/ParentModel'); // Import User Model Schema
-const Seance = require('../models/SeanceModel'); // Import Blog Model Schema
+
+const User = require('../models/UserModel'); // Import Blog Model Schema
 const jwt = require('jsonwebtoken'); // Compact, URL-safe means of representing claims to be transferred between two parties.
 const config = require('../../config/database'); // Import database configuration
 
 module.exports = (router) => {
 //  var UserController = require('../controllers/UserController');
 
-router.get('/Parents/allParents', (req, res) => {
+router.get('/allUsers', (req, res) => {
     // Search database for all blog posts
-    Parent.find({}, (err, parents) => {
+    User.find({}, (err, users) => {
       // Check if error was found or not
       if (err) {
         res.json({ success: false, message: err }); // Return error message
       } else {
         // Check if blogs were found in database
-        if (!parents) {
-          res.json({ success: false, message: 'pas de parents trouvées.' }); // Return error of no blogs found
+        if (!users) {
+          res.json({ success: false, message: 'pas de utilisateurs trouvées.' }); // Return error of no blogs found
         } else {
-          res.json({ success: true, parents: parents }); // Return success and blogs array
+          res.json({ success: true, users: users }); // Return success and blogs array
         }
       }
     }).sort({ '_id': -1 });
   });
 
-  router.get('/Babysitters/allBabysitters', (req, res) => {
-    // Search database for all blog posts
-    Babysitter.find({}, (err, babysitters) => {
-      // Check if error was found or not
-      if (err) {
-        res.json({ success: false, message: err }); // Return error message
-      } else {
-        // Check if blogs were found in database
-        if (!babysitters) {
-          res.json({ success: false, message: 'pas de babysitters trouvées.' }); // Return error of no blogs found
-        } else {
-          res.json({ success: true, babysitters: babysitters }); // Return success and blogs array
-        }
-      }
-    }).sort({ '_id': -1 });
-  });
 
-  router.get('/Parents/getParent/:id', (req, res) => {
+  router.get('/getUser/:username', (req, res) => {
     // Check if id is present in parameters
-    if (!req.params.id) {
-      res.json({ success: false, message: 'Id utilisateur non fourni.' }); // Return error message
+    if (!req.params.username) {
+      res.json({ success: false, message: 'nom utilisateur non fourni.' }); // Return error message
     } else {
-      // Check if the blog id is found in database
-      Parent.findOne({ _id: req.params.id }, (err, user) => {
-        // Check if the id is a valid ID
+       User.findOne({ username : req.params.username.toLowerCase() }, (err, user) => {
+          // Check if the id is a valid ID
         if (err) {
           res.json({ success: false, message: 'Id utilisateur invalid' }); // Return error message
         } else {
@@ -61,18 +43,18 @@ router.get('/Parents/allParents', (req, res) => {
            
           }
         }
+        
       });
     }
   });
 
-  router.get('/Babysitters/getBabysitter/:id', (req, res) => {
+  router.get('/addToUserBalance/:username/:balance', (req, res) => {
     // Check if id is present in parameters
-    if (!req.params.id) {
-      res.json({ success: false, message: 'Id utilisateur non fourni.' }); // Return error message
+    if (!req.params.username) {
+      res.json({ success: false, message: 'nom utilisateur non fourni.' }); // Return error message
     } else {
-      // Check if the blog id is found in database
-      Babysitter.findOne({ _id: req.params.id }, (err, user) => {
-        // Check if the id is a valid ID
+       User.findOne({ username : req.params.username.toLowerCase() }, (err, user) => {
+          // Check if the id is a valid ID
         if (err) {
           res.json({ success: false, message: 'Id utilisateur invalid' }); // Return error message
         } else {
@@ -80,22 +62,46 @@ router.get('/Parents/allParents', (req, res) => {
           if (!user) {
             res.json({ success: false, message: 'Utilisateur introuvable.' }); // Return error message
           } else {
-            res.json({ success: true, user: user }); 
+
+            
+
+            if(isNaN(req.params.balance)){
+              res.json({ success: false, message: 'balance non numérique' }); 
+            }else{
+              console.log(req.params.username + req.params.balance);
+                var sum = (+user.portfoliobalance) + (+req.params.balance);
+                console.log(sum);
+                user.portfoliobalance = sum;
+              //res.json({ success: true, user: user });
+
+                user.save((err) => {
+                 if (err) {
+                  if (err.errors) {
+                    res.json({ success: false, message: err.errors });
+                   } else {
+                    res.json({ success: false, message: err }); // Return error message
+                    }
+                  } else {
+                  res.json({ success: true, user: user , message: 'Utilisateur modifié !' }); // Return success message
+                }
+              });
+            }
+             
            
           }
         }
+        
       });
     }
   });
 
-
-  router.put('/Parents/updateParent', (req, res) => {
+  router.put('/updateUser', (req, res) => {
     // Check if id was provided
     if (!req.body._id) {
       res.json({ success: false, message: 'Id utilisateur non fourni' }); // Return error message
     } else {
       // Check if id exists in database
-      Parent.findOne({ _id: req.body._id }).select("-password").exec((err, user) => {
+      User.findOne({ _id: req.body._id }).select("-password").exec((err, user) => {
         // Check if id is a valid ID
         if (err) {
           res.json({ success: false, message: 'Id utilisateur invalid' }); // Return error message
@@ -104,12 +110,12 @@ router.get('/Parents/allParents', (req, res) => {
           if (!user) {
             res.json({ success: false, message: 'Utilisateur introuvable.' }); // Return error message
           } else {
-                     user.firstname = req.body.firstname; // Save latest blog title
+                    user.firstname = req.body.firstname; // Save latest blog title
                     user.lastname = req.body.lastname;
                     user.email = req.body.email;
                     user.address = req.body.address;
-                    user.Birthdate = req.body.Birthdate;    
-                    user.profilepic = req.body.profilepic;  
+                    user.country = req.body.country;    
+                    user.city = req.body.city;  
                     
                     user.save((err) => {
                       if (err) {
@@ -128,55 +134,16 @@ router.get('/Parents/allParents', (req, res) => {
     }
   });
 
-   router.put('/Babysitters/updateBabysitter', (req, res) => {
-    // Check if id was provided
-    if (!req.body._id) {
-      res.json({ success: false, message: 'Id utilisateur non fourni' }); // Return error message
-    } else {
-      // Check if id exists in database
-      Babysitter.findOne({ _id: req.body._id }, (err, user) => {
-        // Check if id is a valid ID
-        if (err) {
-          res.json({ success: false, message: 'Id utilisateur invalid' }); // Return error message
-        } else {
-          // Check if id was found in the database
-          if (!user) {
-            res.json({ success: false, message: 'Utilisateur introuvable.' }); // Return error message
-          } else {
-                    user.firstname = req.body.firstname; // Save latest blog title
-                    user.lastname = req.body.lastname;
-                    user.email = req.body.email;
-                    user.address = req.body.address;
-                    user.Birthdate = req.body.birthdate;    
-                    user.save((err) => {
-                      if (err) {
-                        if (err.errors) {
-                          res.json({ success: false, message: 'Assurez-vous que le formulaire est rempli correctement' });
-                        } else {
-                          res.json({ success: false, message: err }); // Return error message
-                        }
-                      } else {
-                        res.json({ success: true, message: 'Utilisateur modifié !' }); // Return success message
-                      }
-                    });
-          }
-        }
-      });
-    }
-  });
+  
 
-  router.get('/Parents/getCount', (req, res) => {
-    Parent.count({}, function(err , count){
+  
+  router.get('/getUserCount', (req, res) => {
+    User.count({}, function(err , count){
          res.json({ success: true, num: count });
         });
   });
 
 
-   router.get('/Babysitters/getCount', (req, res) => {
-    Babysitter.count({}, function(err , count){
-         res.json({ success: true, num: count });
-        });
-  });
 
 
   // parents Routes

@@ -1,5 +1,4 @@
-const Parent = require('../models/ParentModel');
-const Babysitter = require('../models/BabysitterModel');
+const User = require('../models/UserModel');
 const jwt = require('jsonwebtoken'); // Compact, URL-safe means of representing claims to be transferred between two parties.
 const config = require('../../config/database'); // Import database configuration
 
@@ -11,7 +10,7 @@ module.exports = (router) => {
   router.post('/register', (req, res) => {
     // Check if email was provided
     if (!req.body.email) {
-      res.json({ success: false, message: 'Vous devez fournir un email' }); // Return error
+      res.json({ success: false, message: 'Vous devez fournir un email'}); // Return error
     } else {
       // Check if username was provided
       if (!req.body.username) {
@@ -21,23 +20,21 @@ module.exports = (router) => {
         if (!req.body.password) {
           res.json({ success: false, message: 'Vous devez fournir un mot de passe' }); // Return error
         } else {
-
-            if(req.body.usertype === "parent" ){
-
                 // Create new user object and apply user input
-          let parent = new Parent({
+          let user = new User({
             lastname: req.body.lastname,
             firstname: req.body.firstname,
             email: req.body.email.toLowerCase(),
             username: req.body.username.toLowerCase(),
             password: req.body.password,
-            gender : req.body.gender,
             address : req.body.address,
-            Birthdate : req.body.birthdate
+            city : req.body.city,
+            country : req.body.country,
+            postalcode : req.body.postalcode
 
           });
           // Save user to database
-          parent.save((err) => {
+          user.save((err) => {
             // Check if error occured
             if (err) {
               // Check if error is an error indicating duplicate account
@@ -71,55 +68,7 @@ module.exports = (router) => {
             }
           });
 
-            }else if (req.body.usertype === "babysitter" ){
-
-                // Create new user object and apply user input
-          let babysitter = new Babysitter({
-            lastname: req.body.lastname,
-            firstname: req.body.firstname,
-            email: req.body.email.toLowerCase(),
-            username: req.body.username.toLowerCase(),
-            password: req.body.password,
-            gender : req.body.gender,
-            address : req.body.address,
-            Birthdate : req.body.birthdate
-          });
-          // Save user to database
-          babysitter.save((err) => {
-            // Check if error occured
-            if (err) {
-              // Check if error is an error indicating duplicate account
-              if (err.code === 11000) {
-                res.json({ success: false, message: 'Nom utilisateur ou e-mail exist déja' }); // Return error
-              } else {
-                // Check if error is a validation rror
-                if (err.errors) {
-                  // Check if validation error is in the email field
-                  if (err.errors.email) {
-                    res.json({ success: false, message: err.errors.email.message }); // Return error
-                  } else {
-                    // Check if validation error is in the username field
-                    if (err.errors.username) {
-                      res.json({ success: false, message: err.errors.username.message }); // Return error
-                    } else {
-                      // Check if validation error is in the password field
-                      if (err.errors.password) {
-                        res.json({ success: false, message: err.errors.password.message }); // Return error
-                      } else {
-                        res.json({ success: false, message: err }); // Return any other error not already covered
-                      }
-                    }
-                  }
-                } else {
-                  res.json({ success: false, message: 'Echec de sauvegarde utilisateur. Error: ', err }); // Return error if not related to validation
-                }
-              }
-            } else {
-              res.json({ success: true, message: 'Compte enregistré' }); // Return success
-            }
-          });
-
-            }
+        
           
         }
       }
@@ -216,69 +165,22 @@ module.exports = (router) => {
         res.json({ success: false, message: 'Mot de passenon fourni.' }); // Return error
       } else {
         // Check if username exists in database
-        Parent.findOne({ username: req.body.username.toLowerCase() }, (err, user) => {
+        User.findOne({ username: req.body.username.toLowerCase() }, (err, user) => {
           // Check if error was found
           if (err) {
-           
-            Babysitter.findOne({ username: req.body.username.toLowerCase() }, (err, user) => {
-          // Check if error was found
-          if (err) {
-            res.json({ success: false, message: err }); // Return error
+            res.json({ success: false, message: err }); // Return error      
           } else {
             // Check if username was found
             if (!user) {
-              res.json({ success: false, message: 'Nom utilisateur introuvable.' }); // Return error
+              res.json({ success: false, message: 'Nom utilisateur introuvable.' }); // Return error           
             } else {
               const validPassword = user.comparePassword(req.body.password); // Compare password provided to password in database
               // Check if password is a match
               if (!validPassword) {
                 res.json({ success: false, message: 'Mot de passe invalid' }); // Return error
               } else {
-                const token = jwt.sign({ userId: user._id , usertype : "babysitter" }, config.secret, { expiresIn: '24h' }); // Create a token for client
-                res.json({ success: true, message: 'Succés!', token: token, user: { username: user.username , usertype : "babysitter" } }); // Return success and token to frontend
-              }
-            }
-          }
-        });
-             
-
-            
-
-            } else {
-            // Check if username was found
-            if (!user) {
-               
-              Babysitter.findOne({ username: req.body.username.toLowerCase() }, (err, user) => {
-          // Check if error was found
-          if (err) {
-            res.json({ success: false, message: err }); // Return error
-          } else {
-            // Check if username was found
-            if (!user) {
-              res.json({ success: false, message: 'Nom utilisateur introuvable.' }); // Return error
-            } else {
-              const validPassword = user.comparePassword(req.body.password); // Compare password provided to password in database
-              // Check if password is a match
-              if (!validPassword) {
-                res.json({ success: false, message: 'Mot de passe invalid' }); // Return error
-              } else {
-                const token = jwt.sign({ userId: user._id , usertype : "babysitter" }, config.secret, { expiresIn: '24h' }); // Create a token for client
-                res.json({ success: true, message: 'Succés!', token: token, user: { username: user.username , usertype : "babysitter" } }); // Return success and token to frontend
-              }
-            }
-          }
-        }); 
-
-             
-              
-            } else {
-              const validPassword = user.comparePassword(req.body.password); // Compare password provided to password in database
-              // Check if password is a match
-              if (!validPassword) {
-                res.json({ success: false, message: 'Mot de passe invalid' }); // Return error
-              } else {
-                 const token = jwt.sign({ userId: user._id , usertype : "parent" }, config.secret, { expiresIn: '24h' }); // Create a token for client
-                res.json({ success: true, message: 'Succés!', token: token, user: { username: user.username , usertype : "parent" } }); // Return success and token to frontend
+                 const token = jwt.sign({ userId: user._id}, config.secret, { expiresIn: '24h' }); // Create a token for client
+                res.json({ success: true, message: 'Succés!', token: token, user: { username: user.username } }); // Return success and token to frontend
               }
             }
           }
@@ -290,7 +192,7 @@ module.exports = (router) => {
   /* ================================================
   MIDDLEWARE - Used to grab user's token from headers
   ================================================ */
-  router.use((req, res, next) => {
+ /* router.use((req, res, next) => {
     const token = req.headers['authorization']; // Create token found in headers
     // Check if token was found in headers
     if (!token) {
@@ -308,7 +210,7 @@ module.exports = (router) => {
       });
     }
   });
- 
+ */
  
   /* ===============================================================
      Route to get user's profile data
@@ -387,6 +289,7 @@ module.exports = (router) => {
       });
     }
   });
+
 
 
 

@@ -1,9 +1,10 @@
 'use strict';
 var mongoose = require('mongoose');
-mongoose.Promise = global.Promise; // Configure Mongoose Promises
-const Schema = mongoose.Schema; // Import Schema from Mongoose
-const bcrypt = require('bcrypt-nodejs'); // A native JS bcrypt library for NodeJS
+mongoose.Promise = global.Promise;
+var Schema = mongoose.Schema;
+const bcrypt = require('bcrypt-nodejs');
 const info = require('../../config/info'); // Import database configuration
+
 
 // Validate Function to check e-mail length
 let emailLengthChecker = (email) => {
@@ -37,7 +38,7 @@ const emailValidators = [
   // First Email Validator
   {
     validator: emailLengthChecker,
-   message: 'E-mail doit comporter au moins 5 caractères mais pas plus de 30'
+    message: 'E-mail doit comporter au moins 5 caractères mais pas plus de 30'
   },
   // Second Email Validator
   {
@@ -83,7 +84,7 @@ const usernameValidators = [
   // Second username validator
   {
     validator: validUsername,
-     message: 'Le nom utilisateur ne doit pas comporter de caractères spéciaux'
+    message: 'Le nom utilisateur ne doit pas comporter de caractères spéciaux'
   }
 ];
 
@@ -119,18 +120,17 @@ const passwordValidators = [
   // First password validator
   {
     validator: passwordLengthChecker,
-     message: 'Mot de passe  doit comporter au moins 8 caractères mais pas plus de 35'
+    message: 'Mot de passe  doit comporter au moins 8 caractères mais pas plus de 35'
   },
   // Second password validator
   {
     validator: validPassword,
-     message: 'Doit avoir au moins une majuscule, minuscule, un caractère spécial et un nombre'
+    message: 'Doit avoir au moins une majuscule, minuscule, un caractère spécial et un nombre'
   }
 ];
 
-
-var BabysitterSchema = new Schema({
- lastname: {
+var UserSchema = new Schema({
+  lastname: {
     type: String,
    
   },
@@ -154,7 +154,7 @@ var BabysitterSchema = new Schema({
     Required: true,
     unique : true,
     validate : emailValidators
-  } ,
+  },
   address: {
     type: String,
     Required: true
@@ -162,16 +162,31 @@ var BabysitterSchema = new Schema({
   },
   gender: {
     type: String,
-    Required: true
+    default : "M"
     
+  },
+  city: {
+    type: String,
+
+  },
+  country: {
+    type: String,
+  },
+  postalcode: {
+    type: String,
   },
   Birthdate: {
-    type: Date
+    type: Date,
     
   },
-  joindate: {
-    type: Date,
-    default: Date.now()
+  portfoliobalance: {
+    type: String,
+    default: "0"
+    
+  },
+  portfolioperformance: {
+    type: String,
+    default: "0%"
     
   },
   profilepic: {
@@ -179,12 +194,11 @@ var BabysitterSchema = new Schema({
     default: info.defaultpiclink
     
   }
+
 });
 
-
-
 // Schema Middleware to Encrypt Password
-BabysitterSchema.pre('save', function(next) {
+UserSchema.pre('save', function(next) {
   // Ensure password is new or modified before applying encryption
   if (!this.isModified('password'))
     return next();
@@ -198,9 +212,9 @@ BabysitterSchema.pre('save', function(next) {
 });
 
 // Methods to compare password to encrypted password upon login
-BabysitterSchema.methods.comparePassword = function(password) {
+UserSchema.methods.comparePassword = function(password) {
   return bcrypt.compareSync(password, this.password); // Return comparison of login password to password in database (true or false)
 };
 
 
-module.exports = mongoose.model('Babysitters', BabysitterSchema);
+module.exports = mongoose.model('Users', UserSchema);

@@ -1,6 +1,6 @@
 const crypto = require('crypto').randomBytes(256).toString('hex');
 module.exports = {
-	uri : 'mongodb://dbuser1:rootpass@ds129003.mlab.com:29003/babycare',
+	uri : 'mongodb://dbuser1:rootpass@ds157799.mlab.com:57799/swtrading',
 	secret : crypto,
-	db : 'babycare'
+	db : 'swtrading'
 }

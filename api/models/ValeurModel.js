@@ -17,6 +17,18 @@ var ValeurSchema = new Schema({
     type: String,
    
   },
+  moyenpondere: {
+    type: String,
+   
+  },
+  derniercours: {
+    type: String,
+   
+  },
+  variation: {
+    type: String,
+   
+  },
   user: {
     type: Schema.Types.ObjectId,
     ref: 'Users'

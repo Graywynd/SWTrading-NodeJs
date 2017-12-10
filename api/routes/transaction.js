@@ -150,17 +150,47 @@ module.exports = (router) => {
                                   
 
                                   if(req.body.side.toLowerCase() == "buy"){
-                                     Valeur.findOne({ nom : options.json.cours.nom},{ user : user._id}).select("nom quantite user cour").exec(function(err, valeur) {
+                                     Valeur.findOne({ nom : options.json.cours.nom},{ user : user._id}).select("nom quantite moyenpondere derniercours variation user cour").exec(function(err, valeur) {
                                           if(!err) {
                                               if(!valeur) {
                                                 valeur = new Valeur();
                                                 valeur.nom = options.json.cours.nom;
-                                                valeur.quantite = "0";
+                                                valeur.quantite = (parseInt(options.json.orderqty)).toString();
+                                                valeur.moyenpondere = options.json.price;
+                                                valeur.derniercours = options.json.cours.dernier;
+                                                valeur.variation = "0";
                                                 valeur.user = user._id;
                                                 valeur.cour = options.json.cours._id;
+                                              }else{
+                                              
+                                              var moyenpondere = parseFloat(valeur.moyenpondere);
+                                              //console.log("moyen pondere" + moyenpondere);
+                                              var derniercours = parseFloat(valeur.derniercours);
+                                              //console.log("dernier cours" + derniercours);
+                                              var variation =  parseFloat(valeur.variation);
+                                              //console.log("variation" + variation);
+                                              var quantite = parseInt(valeur.quantite);
+                                              //console.log("quantite" + quantite);
+                                              var newprice = parseInt(options.json.price);
+
+                                              var addedquantite = parseInt(options.json.orderqty);
+                                              //console.log("added quantite" + addedquantite);
+                                              var newquantite = parseInt(valeur.quantite) + parseInt(options.json.orderqty);
+                                              //console.log("new quantite" + newquantite);
+
+                                              var newderniercours = parseFloat(options.json.cours.dernier);
+                                              //console.log("new dernier cours" + newderniercours);
+                                              var newmyenpondere = (((moyenpondere*quantite)/newquantite) + ((newprice*addedquantite)/newquantite));
+                                              //console.log("new moyen pondere" + newmyenpondere);
+                                              var newvariation  = newmyenpondere - newderniercours;
+                                              //console.log("new varaition" + newvariation);
+                                              
+                                              valeur.moyenpondere = newmyenpondere.toString();
+                                              valeur.derniercours = newderniercours.toString();
+                                              valeur.variation = newvariation.toString();
+                                              valeur.quantite = newquantite.toString();
+                                              
                                               }
-                                              var newvalue = parseInt(valeur.quantite) + parseInt(options.json.orderqty);
-                                              valeur.quantite = newvalue.toString();
                                               valeur.save(function(err) {
                                                   if(!err) {
                                                       console.log("");
@@ -178,17 +208,38 @@ module.exports = (router) => {
                                   }
 
                                   if(req.body.side.toLowerCase() == "sell"){
-                                    Valeur.findOne({ nom : options.json.cours.nom},{ user : user._id}).select("nom quantite user cour").exec(function(err, valeur) {
+                                    Valeur.findOne({ nom : options.json.cours.nom},{ user : user._id}).select("nom quantite moyenpondere derniercours variation user cour").exec(function(err, valeur) {
                                          if(!err) {
                                              if(!valeur) {
                                                valeur = new Valeur();
                                                valeur.nom = options.json.cours.nom;
-                                               valeur.quantite = "0";
+                                               valeur.quantite = (parseInt(options.json.orderqty)).toString();
+                                               valeur.moyenpondere = options.json.price;
+                                               valeur.derniercours = options.json.cours.dernier;
+                                               valeur.variation = "0";
                                                valeur.user = user._id;
                                                valeur.cour = options.json.cours._id;
+                                             }else{
+                                             var moyenpondere = parseFloat(valeur.moyenpondere);
+                                             var derniercours = parseFloat(valeur.derniercours);
+                                             var variation =  parseFloat(valeur.variation);
+                                             var quantite = parseInt(valeur.quantite);
+                                             var newprice = parseInt(options.json.price);
+
+                                             var addedquantite = parseInt(options.json.orderqty);
+                                             var newquantite = parseInt(valeur.quantite) - parseInt(options.json.orderqty);
+                                             
+                                             var newderniercours = parseFloat(options.json.cours.dernier);
+                                             var newmyenpondere = (((moyenpondere*quantite)/newquantite) - ((newprice*addedquantite)/newquantite));
+                                             
+                                             var newvariation  = newmyenpondere - newderniercours;
+
+                                              
+                                             valeur.moyenpondere = newmyenpondere.toString();
+                                             valeur.derniercours = newderniercours.toString();
+                                             valeur.variation = newvariation.toString();
+                                             valeur.quantite = newquantite.toString();
                                              }
-                                             var newvalue = parseInt(valeur.quantite) - parseInt(options.json.orderqty);
-                                             valeur.quantite = newvalue.toString();
                                              valeur.save(function(err) {
                                                  if(!err) {
                                                      console.log("");

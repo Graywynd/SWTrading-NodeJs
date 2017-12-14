@@ -45,6 +45,10 @@ module.exports = (router) => {
                             if (err) {
                             console.log("error retreiving cours");
                           } else {
+
+                            if(req.body.ordertype.toLowerCase() == "market" ){
+                              req.body.price = cours.dernier;
+                            }
                            
                             if(req.body.side.toLowerCase() == "buy"){
                               var cost = parseInt(req.body.orderqty) * parseFloat(req.body.price);
